@@ -1,61 +1,58 @@
 import type { NextPage } from "next";
 /* import Head from 'next/head' */
 /* import Image from 'next/image' */
-import { useSubscription, gql } from "@apollo/client";
-import { useEffect, useState } from "react";
-import { useSession, signIn, signOut } from "next-auth/react"
-import Link from "next/link";
+// import { useSubscription, gql } from "@apollo/client";
+// import { useEffect, useState } from "react";
+import { signOut, getSession } from "next-auth/react";
+// import { useRouter } from "next/router";
 
-const USER_ADDED = gql`
-  subscription OnUserAdded {
-    userAdded {
-      name
-    }
-  }
-`;
+// const USER_ADDED = gql`
+//   subscription OnUserAdded {
+//     userAdded {
+//       name
+//     }
+//   }
+// `;
+//
+// interface User {
+//   name: String;
+//   age: Number;
+// }
 
-interface User {
-  name: String;
-  age: Number;
-}
+interface Context {}
 
 const Home: NextPage = () => {
-  const { data: session } = useSession();
-  const { data } = useSubscription(USER_ADDED);
-  const [users, setUsers] = useState<User[]>([]);
+  // const { data } = useSubscription(USER_ADDED);
+  // const [users, setUsers] = useState<User[]>([]);
 
-  useEffect(() => {
-    if(!data) return;
-    const { userAdded } = data;
-    setUsers([...users, userAdded]);
-  }, [data]);
-
-  if (session) {
-    return (
-      <>
-        Signed in as {session.user?.email} <br />
-
-        <div>
-          <h1>Showing you list of users</h1>
-          {users.map((user: User) => <p>{user.name}</p>)}
-        </div>
-
-        <button onClick={() => signOut()}>Sign out</button>
-      </>
-    )
-  }
+  // useEffect(() => {
+  //   if(!data) return;
+  //   const { userAdded } = data;
+  //   setUsers([...users, userAdded]);
+  // }, [data]);
 
   return (
     <>
-      Not signed in <br />
-      <Link passHref href="/auth/signin">
-        <a>
-          <h2>NextAuth.js Signin</h2>
-          <p>Visit custom sign-in page</p>
-        </a>
-      </Link>
+      <button onClick={() => signOut()}>Sign out</button>
     </>
-  )
+  );
 };
+
+export async function getServerSideProps(context: Context) {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/auth/signin",
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
 
 export default Home;

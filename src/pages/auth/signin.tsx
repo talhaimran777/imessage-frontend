@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { getProviders, signIn } from "next-auth/react";
+import { getProviders, getSession, signIn } from "next-auth/react";
 
 interface Provider {
   id: string;
@@ -7,8 +7,10 @@ interface Provider {
 }
 
 interface SignInProps {
-  providers: [Provider]
+  providers: [Provider];
 }
+
+interface Context {}
 
 const Signin: NextPage<SignInProps> = ({ providers }) => {
   return (
@@ -26,8 +28,19 @@ const Signin: NextPage<SignInProps> = ({ providers }) => {
 
 export default Signin;
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: Context) {
   const providers = await getProviders();
+  const session = await getSession(context);
+
+  if (session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+    };
+  }
+
   return {
     props: { providers },
   };
