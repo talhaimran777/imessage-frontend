@@ -3,6 +3,8 @@ import type { NextPage } from "next";
 /* import Image from 'next/image' */
 import { useSubscription, gql } from "@apollo/client";
 import { useEffect, useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react"
+import Link from "next/link";
 
 const USER_ADDED = gql`
   subscription OnUserAdded {
@@ -18,9 +20,9 @@ interface User {
 }
 
 const Home: NextPage = () => {
+  const { data: session } = useSession();
   const { data } = useSubscription(USER_ADDED);
   const [users, setUsers] = useState<User[]>([]);
-  console.log("YOYO", users);
 
   useEffect(() => {
     if(!data) return;
@@ -28,12 +30,32 @@ const Home: NextPage = () => {
     setUsers([...users, userAdded]);
   }, [data]);
 
+  if (session) {
+    return (
+      <>
+        Signed in as {session.user?.email} <br />
+
+        <div>
+          <h1>Showing you list of users</h1>
+          {users.map((user: User) => <p>{user.name}</p>)}
+        </div>
+
+        <button onClick={() => signOut()}>Sign out</button>
+      </>
+    )
+  }
+
   return (
-    <div>
-      <h1>Showing you list of users</h1>
-      {users.map((user: User) => <p>{user.name}</p>)}
-    </div>
-  );
+    <>
+      Not signed in <br />
+      <Link passHref href="/auth/signin">
+        <a>
+          <h2>NextAuth.js Signin</h2>
+          <p>Visit custom sign-in page</p>
+        </a>
+      </Link>
+    </>
+  )
 };
 
 export default Home;
