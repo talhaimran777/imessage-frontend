@@ -3,7 +3,8 @@ import type { NextPage } from "next";
 /* import Image from 'next/image' */
 // import { useSubscription, gql } from "@apollo/client";
 // import { useEffect, useState } from "react";
-import { signOut, getSession } from "next-auth/react";
+import { getSession } from "next-auth/react";
+import Chat from "../components/Chat";
 // import { useRouter } from "next/router";
 
 // const USER_ADDED = gql`
@@ -33,7 +34,7 @@ const Home: NextPage = () => {
 
   return (
     <>
-      <button onClick={() => signOut()}>Sign out</button>
+      <Chat />
     </>
   );
 };
