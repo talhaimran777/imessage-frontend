@@ -4,7 +4,9 @@ import type { NextPage } from "next";
 // import { useSubscription, gql } from "@apollo/client";
 // import { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
+import { useEffect } from "react";
 import Chat from "../components/Chat";
+import CreateUsername from "../components/CreateUsername";
 // import { useRouter } from "next/router";
 
 // const USER_ADDED = gql`
@@ -16,13 +18,26 @@ import Chat from "../components/Chat";
 // `;
 //
 // interface User {
-//   name: String;
+//   name: string;
 //   age: Number;
 // }
 
-interface Context {}
+interface Context { }
 
-const Home: NextPage = () => {
+interface USER {
+  id: string;
+  name: string;
+  username: string;
+}
+
+interface HomeProps {
+  user?: USER
+}
+
+const Home: NextPage = (props: HomeProps) => {
+  const { user } = props;
+  console.log("YOYO", user);
+  
   // const { data } = useSubscription(USER_ADDED);
   // const [users, setUsers] = useState<User[]>([]);
 
@@ -32,17 +47,28 @@ const Home: NextPage = () => {
   //   setUsers([...users, userAdded]);
   // }, [data]);
 
+  useEffect(() => {
+    if (user) return localStorage.setItem('userId', user.id);
+    localStorage.removeItem('userId');
+  }, [user]);
+
   return (
     <>
-      <Chat />
+      {user ? (
+        user.username ? (
+          <Chat />
+        ) : (
+          <CreateUsername userId={user.id} />
+        )
+      ) : null}
     </>
   );
 };
 
 export async function getServerSideProps(context: Context) {
-  const session = await getSession(context);
+  const user = await getSession(context);
 
-  if (!session) {
+  if (!user) {
     return {
       redirect: {
         permanent: false,
@@ -52,7 +78,9 @@ export async function getServerSideProps(context: Context) {
   }
 
   return {
-    props: {},
+    props: {
+      user
+    },
   };
 }
 
